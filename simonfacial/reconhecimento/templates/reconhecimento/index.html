@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Reconhecimento Facial</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+        video, img { border: 2px solid #333; margin-bottom: 20px; }
+        select, button { padding: 10px; margin: 10px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <h1>Reconhecimento Facial</h1>
+
+    <!-- Stream de vídeo -->
+    <img id="video" src="{% url 'video_feed' %}" width="640" height="480">
+
+    <!-- Dropdown de disciplinas -->
+    <div>
+        <label for="disciplinas">Selecione a disciplina:</label>
+        <select id="disciplinas">
+            <option value="">-- Nenhuma disciplina --</option>
+        </select>
+    </div>
+
+    <!-- Botão confirmar -->
+    <div>
+        <button id="confirmarBtn">Confirmar Seleção</button>
+    </div>
+
+    <script>
+        let currentUid = null;  // Último usuário identificado
+        const dropdown = document.getElementById("disciplinas");
+        const confirmarBtn = document.getElementById("confirmarBtn");
+
+        // 🔹 Atualiza lista de disciplinas periodicamente
+        setInterval(async () => {
+            try {
+                const resp = await fetch("{% url 'get_disciplines' %}");
+                const data = await resp.json();
+
+                if (data.uid) {
+                    currentUid = data.uid;
+
+                    // Limpa dropdown
+                    dropdown.innerHTML = '<option value="">-- Selecione --</option>';
+
+                    // Preenche disciplinas
+                    data.disciplinas.forEach(d => {
+                        const opt = document.createElement("option");
+                        opt.value = d.disciplinaId;
+                        opt.textContent = d.disciplina;
+                        dropdown.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error("Erro ao buscar disciplinas:", err);
+            }
+        }, 10000); // a cada 10 segundos
+
+        // 🔹 Botão confirmar seleção
+        confirmarBtn.addEventListener("click", async () => {
+            if (!currentUid) {
+                alert("Nenhum usuário identificado!");
+                return;
+            }
+            const disciplinaId = dropdown.value;
+            if (!disciplinaId) {
+                alert("Selecione uma disciplina!");
+                return;
+            }
+
+            const payload = { uid: currentUid, disciplinaId: disciplinaId };
+            console.log("Enviando:", payload);
+
+            try {
+                const resp = await fetch("{% url 'confirm_discipline' %}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await resp.json();
+                console.log("Resposta final:", result);
+
+                if (result.error) {
+                    alert("Erro: " + result.error);
+                } else {
+                    alert("Confirmação enviada! Resposta: " + JSON.stringify(result.resposta));
+                }
+            } catch (err) {
+                console.error("Erro ao confirmar:", err);
+                alert("Erro ao enviar confirmação.");
+            }
+        });
+    </script>
+</body>
+</html>
