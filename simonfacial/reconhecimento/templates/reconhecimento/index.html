@@ -4,9 +4,94 @@
     <meta charset="UTF-8">
     <title>Reconhecimento Facial</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        video, img { border: 2px solid #333; margin-bottom: 20px; }
-        select, button { padding: 10px; margin: 10px; font-size: 16px; }
+        /* ====== ESTILO GERAL ====== */
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            background-color: #f8f9fb;
+            color: #1f2937;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 30px;
+        }
+
+        /* ====== IMAGEM DE VÍDEO ====== */
+        img {
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 640px;
+            height: 480px;
+            object-fit: cover;
+            margin-bottom: 25px;
+            border: none;
+        }
+
+        /* ====== CONTAINERS ====== */
+        div {
+            background: white;
+            border-radius: 16px;
+            padding: 20px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            width: 640px;
+            text-align: left;
+        }
+
+        label {
+            font-weight: 600;
+            color: #374151;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* ====== DROPDOWN ====== */
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            background-color: #f9fafb;
+            font-size: 15px;
+            color: #111827;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        select:focus {
+            border-color: #7b61ff;
+            box-shadow: 0 0 0 3px rgba(123,97,255,0.2);
+        }
+
+        /* ====== BOTÃO CONFIRMAR ====== */
+        button {
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease, transform 0.2s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transform: scale(1.02);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -29,11 +114,10 @@
     </div>
 
     <script>
-        let currentUid = null;  // Último usuário identificado
+        let currentUid = null;
         const dropdown = document.getElementById("disciplinas");
         const confirmarBtn = document.getElementById("confirmarBtn");
 
-        // 🔹 Atualiza lista de disciplinas periodicamente
         setInterval(async () => {
             try {
                 const resp = await fetch("{% url 'get_disciplines' %}");
@@ -41,11 +125,7 @@
 
                 if (data.uid) {
                     currentUid = data.uid;
-
-                    // Limpa dropdown
                     dropdown.innerHTML = '<option value="">-- Selecione --</option>';
-
-                    // Preenche disciplinas
                     data.disciplinas.forEach(d => {
                         const opt = document.createElement("option");
                         opt.value = d.disciplinaId;
@@ -56,9 +136,8 @@
             } catch (err) {
                 console.error("Erro ao buscar disciplinas:", err);
             }
-        }, 10000); // a cada 10 segundos
+        }, 10000);
 
-        // 🔹 Botão confirmar seleção
         confirmarBtn.addEventListener("click", async () => {
             if (!currentUid) {
                 alert("Nenhum usuário identificado!");
